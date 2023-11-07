@@ -1,15 +1,40 @@
-use std::path::Path;
 use std::any::type_name;
+use std::path::Path;
 
+use log::warn;
 use redb::{Database, DatabaseError, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
-use log::warn;
+use uuid::Uuid;
 
 pub type RedbTable = TableDefinition<'static, u128, &'static str>;
 pub const REDB_TABLE: RedbTable = RedbTable::new("data");
 
 pub trait RedbStorage: Serialize + DeserializeOwned {
     fn db_path() -> &'static Path;
+
+    fn generate_uuid() -> anyhow::Result<Option<u128>> {
+        let uuid = Uuid::new_v4().as_u128();
+
+        let db = Self::open_db()?;
+        let read_txn = db.begin_read()?;
+        let table = read_txn.open_table(REDB_TABLE)?;
+        let element = table.get(uuid)?;
+
+        if element.is_none() {
+            Ok(Some(uuid))
+        } else {
+            Ok(None)
+        }
+    }
+
+    fn ensure_table() -> anyhow::Result<()> {
+        let db = Self::open_db()?;
+        let write_txn = db.begin_write()?;
+        write_txn.open_table(REDB_TABLE)?;
+        write_txn.commit()?;
+
+        Ok(())
+    }
 
     fn save(&self, key: u128) -> anyhow::Result<()> {
         let db = Self::open_db()?;
