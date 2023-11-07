@@ -30,7 +30,7 @@ impl Widgets {
             .step_increment(1.0)
             .upper(100.0)
             .build();
-        
+
         let keep_sets = adw::SpinRow::builder()
             .title("Rotation rounds")
             .subtitle("Number of rounds to keep sets for")
@@ -42,7 +42,7 @@ impl Widgets {
             .step_increment(1.0)
             .upper(100.0)
             .build();
-        
+
         let exclude_first = adw::SpinRow::builder()
             .title("Rotation delay")
             .subtitle("Number of rounds to exclude from rotation")
@@ -58,15 +58,29 @@ impl Widgets {
         root.add_row(&exclude_first);
         root.add_row(&full_rotation);
 
-        Self { root, keep_sets, exclude_first, full_rotation }
+        Self {
+            root,
+            keep_sets,
+            exclude_first,
+            full_rotation,
+        }
     }
 
     pub fn get(&self) -> &adw::ExpanderRow {
         &self.root
     }
 
+    pub fn load(&self, setting: &Option<Setting>) {
+        if let Some(setting) = setting {
+            self.root.set_enable_expansion(true);
+            self.keep_sets.set_value(setting.keep_sets as f64);
+            self.exclude_first.set_value(setting.exclude_first as f64);
+            self.full_rotation.set_active(setting.full_rotation);
+        }
+    }
+
     pub fn collect(&self) -> Option<Setting> {
-        match self.root.is_expanded() {
+        match self.root.enables_expansion() {
             true => Some(Setting {
                 keep_sets: self.keep_sets.value() as usize,
                 exclude_first: self.exclude_first.value() as usize,
