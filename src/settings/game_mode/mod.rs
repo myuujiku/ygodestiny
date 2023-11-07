@@ -86,6 +86,7 @@ macro_rules! create_settings_component {
                 sender: ComponentSender<Self>,
             ) {
                 sender.output(
+                    #[allow(clippy::needless_update)]
                     Settings {
                         $( $( $i: self.$i.collect(), )* )*
                         ..Default::default()
