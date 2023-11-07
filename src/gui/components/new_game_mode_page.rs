@@ -2,11 +2,14 @@ use adw::prelude::*;
 use relm4::prelude::*;
 
 use crate::gui::templates::NewGameMode;
+use crate::settings::game_mode::components::timeline;
+use crate::settings::game_mode::Settings;
 
 pub struct Component;
 
 #[derive(Debug)]
 pub enum Input {
+    Done(Settings),
     GoNext,
     GoBack,
     PageChanged(u32),
@@ -79,6 +82,9 @@ impl relm4::Component for Component {
         root: &Self::Root,
     ) {
         match msg {
+            Input::Done(settings) => {
+                println!("{:#?}", settings);
+            }
             // This is jank, change it
             Input::GoNext => {
                 widgets
@@ -97,6 +103,23 @@ impl relm4::Component for Component {
                 widgets.content.back_button.set_visible(page == 1);
             }
             Input::SelectTimeline => {
+                let page = timeline::Component::builder().launch(());
+                widgets.content.settings.set_content(Some(page.widget()));
+
+                {
+                    let sender = sender.clone();
+
+                    relm4::spawn_local(async move {
+                        let output = page
+                            .into_stream()
+                            .recv_one()
+                            .await
+                            .expect("Failed to recieve output from timeline");
+
+                        sender.input(Input::Done(output));
+                    });
+                }
+
                 sender.input(Input::GoNext);
             }
         }
