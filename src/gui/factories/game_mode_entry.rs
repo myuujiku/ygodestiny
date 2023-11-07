@@ -6,7 +6,7 @@ use relm4::prelude::*;
 use crate::data::game_mode::GameModeMetadata;
 
 #[derive(Debug)]
-pub struct Collection {
+pub struct Component {
     uuid: u128,
     name: String,
     description: String,
@@ -28,7 +28,7 @@ pub enum Input {
 
 #[derive(Debug)]
 pub enum Output {
-    Output(u128),
+    Open(u128),
 }
 
 #[relm4::factory(pub)]

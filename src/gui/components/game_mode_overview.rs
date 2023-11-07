@@ -1,17 +1,26 @@
 use adw::prelude::*;
 use gtk::glib;
+use relm4::factory::FactoryVecDeque;
 use relm4::prelude::*;
 
+use crate::data::{
+    game_mode::{GameMode, GameModeMetadata},
+    Metadata, RedbStorage,
+};
 use crate::gui::components::new_game_mode_page;
+use crate::gui::factories::game_mode_entry;
 use crate::gui::templates::{breakpoint, SplitView};
 
-pub struct Component;
+pub struct Component {
+    game_mode_entries: FactoryVecDeque<game_mode_entry::Component>,
+}
 
 #[derive(Debug)]
 pub enum Input {
     New,
     ClosePage,
     Open(u128),
+    Update,
 }
 
 #[relm4::component(pub)]
@@ -40,6 +49,12 @@ impl relm4::Component for Component {
                         add_button {
                             connect_clicked => Input::New,
                         },
+
+                        #[template_child]
+                        content {
+                            #[local_ref]
+                            game_mode_entry_box -> gtk::ListBox {}
+                        },
                     },
                 },
             },
@@ -57,10 +72,21 @@ impl relm4::Component for Component {
     fn init(
         _: Self::Init,
         root: &Self::Root,
-        _sender: ComponentSender<Self>,
+        sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let model = Self;
+        let game_mode_entries = FactoryVecDeque::builder()
+            .launch(gtk::ListBox::default())
+            .forward(sender.input_sender(), |output| match output {
+                game_mode_entry::Output::Open(uuid) => Input::Open(uuid),
+            });
+
+        let model = Self { game_mode_entries };
+
+        let game_mode_entry_box = model.game_mode_entries.widget();
+
         let widgets = view_output!();
+
+        sender.input(Input::Update);
 
         ComponentParts { model, widgets }
     }
@@ -96,6 +122,19 @@ impl relm4::Component for Component {
             }
             Input::Open(uuid) => {
                 widgets.navigation_view.pop();
+            }
+            Input::Update => {
+                let all = GameMode::get_all_as::<Metadata<GameModeMetadata>>().unwrap();
+
+                let mut guard = self.game_mode_entries.guard();
+                guard.clear();
+
+                for data in all {
+                    guard.push_back(game_mode_entry::Data {
+                        uuid: data.0,
+                        metadata: data.1.metadata,
+                    });
+                }
             }
         }
     }

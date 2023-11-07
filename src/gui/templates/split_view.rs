@@ -28,6 +28,16 @@ impl WidgetTemplate for SplitView {
                         },
                     },
 
+                    #[wrap(Some)]
+                    set_content = &gtk::ScrolledWindow {
+                        set_hscrollbar_policy: gtk::PolicyType::Never,
+
+                        #[name = "content"]
+                        adw::Bin {
+                            add_css_class: "toolbar",
+                        },
+                    },
+
                     #[name = "top_search_entry"]
                     add_top_bar = &get_search_entry() -> adw::Bin {},
 
