@@ -1,7 +1,8 @@
 use adw::prelude::*;
 use relm4::{adw, gtk};
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Setting {
     pub keep_sets: usize,
     pub exclude_first: usize,

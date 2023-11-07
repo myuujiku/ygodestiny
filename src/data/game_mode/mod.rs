@@ -5,12 +5,13 @@ use serde::{Deserialize, Serialize};
 
 use crate::data::files;
 use crate::data::RedbStorage;
+use crate::settings::game_mode::Settings;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GameMode {
-    metadata: GameModeMetadata,
-    games: Vec<u128>,
-    settings: (),
+    pub metadata: GameModeMetadata,
+    pub settings: Settings,
+    pub games: Vec<u128>,
 }
 
 impl RedbStorage for GameMode {
@@ -19,7 +20,7 @@ impl RedbStorage for GameMode {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct GameModeMetadata {
     pub name: String,
     pub description: String,

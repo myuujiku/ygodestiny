@@ -94,7 +94,9 @@ impl relm4::Component for Component {
             Input::ClosePage => {
                 widgets.navigation_view.pop();
             }
-            _ => todo!(),
+            Input::Open(uuid) => {
+                widgets.navigation_view.pop();
+            }
         }
     }
 }

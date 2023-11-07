@@ -1,15 +1,16 @@
 use adw::prelude::*;
 use relm4::prelude::*;
 
+use crate::data::game_mode::GameMode;
+use crate::data::RedbStorage;
 use crate::gui::templates::NewGameMode;
 use crate::settings::game_mode::components::timeline;
-use crate::settings::game_mode::Settings;
 
 pub struct Component;
 
 #[derive(Debug)]
 pub enum Input {
-    Done(Settings),
+    Done(GameMode),
     GoNext,
     GoBack,
     SelectTimeline,
@@ -69,8 +70,13 @@ impl relm4::Component for Component {
         _root: &Self::Root,
     ) {
         match msg {
-            Input::Done(settings) => {
-                println!("{:#?}", settings);
+            Input::Done(game_mode) => {
+                // TODO: Error handling
+                let uuid = GameMode::generate_uuid().unwrap().unwrap();
+                game_mode.save(uuid).unwrap();
+                sender
+                    .output(Output::Created(uuid))
+                    .expect("Failed to output from new_game_mode_page");
             }
             Input::GoNext => {
                 widgets
