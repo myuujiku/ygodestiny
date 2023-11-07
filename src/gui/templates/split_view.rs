@@ -50,6 +50,7 @@ impl WidgetTemplate for SplitView {
             set_content = &adw::NavigationPage {
                 set_title: "Content",
 
+                #[name = "content_view"]
                 adw::ToolbarView {
                     add_top_bar = &adw::HeaderBar {
                         set_show_title: false,

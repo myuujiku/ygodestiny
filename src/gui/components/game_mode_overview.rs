@@ -7,7 +7,7 @@ use crate::data::{
     game_mode::{GameMode, GameModeMetadata},
     Metadata, RedbStorage,
 };
-use crate::gui::components::new_game_mode_page;
+use crate::gui::components::{game_mode_page, new_game_mode_page};
 use crate::gui::factories::game_mode_entry;
 use crate::gui::templates::{breakpoint, SplitView};
 
@@ -128,6 +128,18 @@ impl relm4::Component for Component {
             Input::Open(uuid) => {
                 widgets.navigation_view.pop();
                 println!("{uuid}");
+
+                let page = game_mode_page::Component::builder().launch(uuid);
+                widgets.split_view.content_view.set_content(Some(page.widget()));
+                widgets.split_view.set_show_content(true);
+
+                relm4::spawn_local(async move {
+                    let output = page
+                        .into_stream()
+                        .recv_one()
+                        .await
+                        .expect("Failed to recieve output from game_mode_page");
+                });
             }
             Input::Update => {
                 let mut all = GameMode::get_all_as::<Metadata<GameModeMetadata>>().unwrap();
