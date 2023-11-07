@@ -21,6 +21,7 @@ pub enum Input {
     ClosePage,
     Open(u128),
     Update,
+    SelectFirst,
 }
 
 #[relm4::component(pub)]
@@ -116,6 +117,7 @@ impl relm4::Component for Component {
                     match output {
                         Output::Created(uuid) => {
                             sender.input(Input::Update);
+                            sender.input(Input::SelectFirst);
                             sender.input(Input::Open(uuid));
                         }
                         Output::Exit => sender.input(Input::ClosePage),
@@ -129,7 +131,10 @@ impl relm4::Component for Component {
                 println!("{uuid}");
 
                 let page = game_mode_page::Component::builder().launch(uuid);
-                widgets.split_view.content_view.set_content(Some(page.widget()));
+                widgets
+                    .split_view
+                    .content_view
+                    .set_content(Some(page.widget()));
                 widgets.split_view.set_show_content(true);
                 widgets.navigation_view.pop();
 
@@ -140,6 +145,11 @@ impl relm4::Component for Component {
                         .await
                         .expect("Failed to recieve output from game_mode_page");
                 });
+            }
+            Input::SelectFirst => {
+                widgets
+                    .game_mode_entry_box
+                    .select_row(widgets.game_mode_entry_box.row_at_index(0).as_ref());
             }
             Input::Update => {
                 let mut all = GameMode::get_all_as::<Metadata<GameModeMetadata>>().unwrap();
