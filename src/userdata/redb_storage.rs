@@ -1,7 +1,9 @@
 use std::path::Path;
+use std::any::type_name;
 
 use redb::{Database, DatabaseError, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
+use log::warn;
 
 pub type RedbTable = TableDefinition<'static, u128, &'static str>;
 pub const REDB_TABLE: RedbTable = RedbTable::new("data");
@@ -25,21 +27,6 @@ pub trait RedbStorage: Serialize + DeserializeOwned {
         Self::load_data_as(key)
     }
 
-    fn get_all_keys() -> anyhow::Result<Vec<u128>> {
-        let db = Self::open_db()?;
-        let read_txn = db.begin_read()?;
-        let table = read_txn.open_table(REDB_TABLE)?;
-        let keys = Ok(table
-            .iter()?
-            .filter_map(|e| match e {
-                Ok(v) => Some(v.0.value()),
-                Err(_) => None,
-            })
-            .collect());
-
-        keys
-    }
-
     // There probably is a better solution, but this works eh
     #[allow(clippy::let_and_return)]
     fn load_data_as<T: DeserializeOwned>(key: u128) -> anyhow::Result<T> {
@@ -50,6 +37,35 @@ pub trait RedbStorage: Serialize + DeserializeOwned {
         let data = Ok(ron::from_str(table.get(key)?.unwrap().value())?);
 
         data
+    }
+
+    fn load_all() -> anyhow::Result<Vec<(u128, Self)>> {
+        Self::load_all_as()
+    }
+
+    fn load_all_as<T: DeserializeOwned>() -> anyhow::Result<Vec<(u128, T)>> {
+        let db = Self::open_db()?;
+        let read_txn = db.begin_read()?;
+        let table = read_txn.open_table(REDB_TABLE)?;
+
+        let mut data = Vec::new();
+        for element in table.iter()? {
+            match element {
+                Ok((k, v)) => {
+                    let (k, v) = (k.value(), v.value());
+
+                    match ron::from_str::<T>(v) {
+                        Ok(value) => {
+                            data.push((k, value));
+                        }
+                        Err(e) => warn!("Error while parsing {} {k:#X}: {e}", type_name::<T>()),
+                    }
+                }
+                Err(e) => warn!("Error while reading {} database: {e}", type_name::<T>()),
+            }
+        }
+
+        Ok(data)
     }
 
     fn open_db() -> Result<Database, DatabaseError> {
