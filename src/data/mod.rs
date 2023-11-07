@@ -17,3 +17,6 @@ pub mod set;
 
 mod redb_storage;
 pub use redb_storage::RedbStorage;
+
+mod metadata;
+pub use metadata::Metadata;
