@@ -13,8 +13,8 @@ impl WidgetTemplate for SplitView {
             },
 
             set_sidebar_width_fraction: 0.3,
-            set_min_sidebar_width: 260.0,
-            set_max_sidebar_width: 360.0,
+            set_min_sidebar_width: 240.0,
+            set_max_sidebar_width: 720.0,
 
             #[wrap(Some)]
             set_sidebar = &adw::NavigationPage {
