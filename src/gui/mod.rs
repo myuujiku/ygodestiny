@@ -2,13 +2,14 @@ pub mod components;
 pub mod templates;
 
 use adw::prelude::*;
-use gtk::{gdk, glib};
+use gtk::gdk;
 use relm4::prelude::*;
 
-use templates::breakpoint;
-use templates::SplitView;
+use components::game_mode_overview;
 
-pub struct Main;
+pub struct Main {
+    game_mode_overview: Controller<game_mode_overview::Component>,
+}
 
 #[derive(Debug)]
 pub struct Input {}
@@ -25,21 +26,9 @@ impl Component for Main {
         adw::Window {
             set_default_width: 800,
             set_default_height: 600,
-            set_width_request: 360,
-            set_height_request: 240,
-            add_css_class: "devel",
+            //add_css_class: "devel",
 
-            #[template]
-            #[name = "split_view"]
-            SplitView {},
-
-            add_breakpoint = breakpoint::default() {
-                add_setter: (
-                    split_view.upcast_ref::<glib::Object>(),
-                    "collapsed",
-                    &glib::Value::from(true)
-                ),
-            },
+            model.game_mode_overview.widget(),
         }
     }
 
@@ -51,7 +40,11 @@ impl Component for Main {
         load_css();
         relm4_icons::initialize_icons();
 
-        let model = Self;
+        let game_mode_overview = game_mode_overview::Component::builder()
+            .launch(())
+            .forward(sender.input_sender(), |_| Input {});
+
+        let model = Self { game_mode_overview };
         let widgets = view_output!();
 
         ComponentParts { model, widgets }
