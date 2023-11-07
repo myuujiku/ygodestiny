@@ -32,7 +32,7 @@ impl WidgetTemplate for SplitView {
                     set_content = &gtk::ScrolledWindow {
                         set_hscrollbar_policy: gtk::PolicyType::Never,
 
-                        #[name = "content"]
+                        #[name = "sidebar_content"]
                         adw::Bin,
                     },
 

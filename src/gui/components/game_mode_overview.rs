@@ -51,7 +51,7 @@ impl relm4::Component for Component {
                         },
 
                         #[template_child]
-                        content {
+                        sidebar_content {
                             #[local_ref]
                             game_mode_entry_box -> gtk::ListBox {
                                 add_css_class: "navigation-sidebar",
