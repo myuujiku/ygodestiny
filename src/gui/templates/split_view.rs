@@ -22,6 +22,7 @@ impl WidgetTemplate for SplitView {
 
                 adw::ToolbarView {
                     add_top_bar = &adw::HeaderBar {
+                        #[name = "add_button"]
                         pack_start = &gtk::Button {
                             set_icon_name: icon_name::PLUS_LARGE,
                         },
@@ -41,10 +42,16 @@ impl WidgetTemplate for SplitView {
             set_content = &adw::NavigationPage {
                 set_title: "Content",
 
-                adw::StatusPage {
-                    set_title: "Select a Game Mode",
-                    set_icon_name: Some(icon_name::NINTENDO_CONTROLLER),
-                    add_css_class: "spinny",
+                adw::ToolbarView {
+                    add_top_bar = &adw::HeaderBar {
+                        set_show_title: false,
+                    },
+
+                    #[wrap(Some)]
+                    set_content = &adw::StatusPage {
+                        set_title: "Select a Game Mode",
+                        set_icon_name: Some(icon_name::NINTENDO_CONTROLLER),
+                    },
                 }
             },
         }
