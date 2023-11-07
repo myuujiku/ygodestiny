@@ -114,7 +114,10 @@ impl relm4::Component for Component {
 
                     use new_game_mode_page::Output;
                     match output {
-                        Output::Created(uuid) => sender.input(Input::Open(uuid)),
+                        Output::Created(uuid) => {
+                            sender.input(Input::Update);
+                            sender.input(Input::Open(uuid));
+                        }
                         Output::Exit => sender.input(Input::ClosePage),
                     }
                 });
