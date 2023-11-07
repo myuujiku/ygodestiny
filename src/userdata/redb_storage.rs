@@ -11,7 +11,7 @@ pub const REDB_TABLE: RedbTable = RedbTable::new("data");
 pub trait RedbStorage: Serialize + DeserializeOwned {
     fn db_path() -> &'static Path;
 
-    fn save_data(&self, key: u128) -> anyhow::Result<()> {
+    fn save(&self, key: u128) -> anyhow::Result<()> {
         let db = Self::open_db()?;
         let write_txn = db.begin_write()?;
         {
@@ -23,13 +23,13 @@ pub trait RedbStorage: Serialize + DeserializeOwned {
         Ok(())
     }
 
-    fn load_data(key: u128) -> anyhow::Result<Self> {
-        Self::load_data_as(key)
+    fn get(key: u128) -> anyhow::Result<Self> {
+        Self::get_as(key)
     }
 
     // There probably is a better solution, but this works eh
     #[allow(clippy::let_and_return)]
-    fn load_data_as<T: DeserializeOwned>(key: u128) -> anyhow::Result<T> {
+    fn get_as<T: DeserializeOwned>(key: u128) -> anyhow::Result<T> {
         let db = Self::open_db()?;
         let read_txn = db.begin_read()?;
         let table = read_txn.open_table(REDB_TABLE)?;
@@ -39,11 +39,11 @@ pub trait RedbStorage: Serialize + DeserializeOwned {
         data
     }
 
-    fn load_all() -> anyhow::Result<Vec<(u128, Self)>> {
-        Self::load_all_as()
+    fn get_all() -> anyhow::Result<Vec<(u128, Self)>> {
+        Self::get_all_as()
     }
 
-    fn load_all_as<T: DeserializeOwned>() -> anyhow::Result<Vec<(u128, T)>> {
+    fn get_all_as<T: DeserializeOwned>() -> anyhow::Result<Vec<(u128, T)>> {
         let db = Self::open_db()?;
         let read_txn = db.begin_read()?;
         let table = read_txn.open_table(REDB_TABLE)?;
