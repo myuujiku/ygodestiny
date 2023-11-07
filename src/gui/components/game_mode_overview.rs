@@ -13,6 +13,7 @@ use crate::gui::templates::{breakpoint, SplitView};
 
 pub struct Component {
     game_mode_entries: FactoryVecDeque<game_mode_entry::Component>,
+    game_mode_page: Option<Controller<game_mode_page::Component>>,
 }
 
 #[derive(Debug)]
@@ -21,7 +22,10 @@ pub enum Input {
     ClosePage,
     Open(u128),
     Update,
-    SelectFirst,
+    SelectRow(i32),
+    Edit(u128),
+    Copy(u128),
+    Delete(u128),
 }
 
 #[relm4::component(pub)]
@@ -83,7 +87,10 @@ impl relm4::Component for Component {
                 game_mode_entry::Output::Open(uuid) => Input::Open(uuid),
             });
 
-        let model = Self { game_mode_entries };
+        let model = Self {
+            game_mode_entries,
+            game_mode_page: None,
+        };
 
         let game_mode_entry_box = model.game_mode_entries.widget();
 
@@ -117,7 +124,7 @@ impl relm4::Component for Component {
                     match output {
                         Output::Created(uuid) => {
                             sender.input(Input::Update);
-                            sender.input(Input::SelectFirst);
+                            sender.input(Input::SelectRow(0));
                             sender.input(Input::Open(uuid));
                         }
                         Output::Exit => sender.input(Input::ClosePage),
@@ -130,26 +137,32 @@ impl relm4::Component for Component {
             Input::Open(uuid) => {
                 println!("{uuid}");
 
-                let page = game_mode_page::Component::builder().launch(uuid);
+                let page = game_mode_page::Component::builder().launch(uuid).forward(
+                    sender.input_sender(),
+                    |output| {
+                        use game_mode_page::Output;
+                        match output {
+                            Output::Edit(uuid) => Input::Edit(uuid),
+                            Output::Copy(uuid) => Input::Copy(uuid),
+                            Output::Delete(uuid) => Input::Delete(uuid),
+                        }
+                    },
+                );
+
                 widgets
                     .split_view
                     .content_view
-                    .set_content(Some(page.widget()));
+                    .set_child(Some(page.widget()));
                 widgets.split_view.set_show_content(true);
                 widgets.navigation_view.pop();
-
-                relm4::spawn_local(async move {
-                    let output = page
-                        .into_stream()
-                        .recv_one()
-                        .await
-                        .expect("Failed to recieve output from game_mode_page");
-                });
+                self.game_mode_page = Some(page);
             }
-            Input::SelectFirst => {
-                widgets
+            Input::SelectRow(index) => {
+                let current_row = widgets
                     .game_mode_entry_box
-                    .select_row(widgets.game_mode_entry_box.row_at_index(0).as_ref());
+                    .row_at_index(index)
+                    .expect("Row has to exist");
+                widgets.game_mode_entry_box.select_row(Some(&current_row));
             }
             Input::Update => {
                 let mut all = GameMode::get_all_as::<Metadata<GameModeMetadata>>().unwrap();
@@ -167,6 +180,21 @@ impl relm4::Component for Component {
                         description: data.1.metadata.game_mode_type,
                     });
                 }
+            }
+            Input::Edit(uuid) => {}
+            Input::Delete(uuid) => {}
+            Input::Copy(uuid) => {
+                let game_mode = GameMode::get(uuid).unwrap();
+                game_mode.save(GameMode::generate_uuid().unwrap().unwrap());
+
+                let index = widgets
+                    .game_mode_entry_box
+                    .selected_row()
+                    .expect("A row has to be selected")
+                    .index();
+
+                sender.input(Input::Update);
+                sender.input(Input::SelectRow(index + 1));
             }
         }
     }
