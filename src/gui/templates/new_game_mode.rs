@@ -9,10 +9,11 @@ impl WidgetTemplate for NewGameMode {
         adw::ToolbarView {
             #[name = "header_bar"]
             add_top_bar = &adw::HeaderBar {
+                set_show_back_button: false,
+
                 #[name = "back_button"]
                 pack_start = &gtk::Button {
                     set_icon_name: "go-previous",
-                    set_visible: false,
                 },
             },
 
