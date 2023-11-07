@@ -12,7 +12,6 @@ pub enum Input {
     Done(Settings),
     GoNext,
     GoBack,
-    PageChanged(u32),
     SelectTimeline,
 }
 
@@ -33,22 +32,10 @@ impl relm4::Component for Component {
     view! {
         adw::NavigationPage {
             set_title: "New Game Mode",
-            connect_unrealize[sender] => move |_| {
-                sender
-                    .output(Output::Exit)
-                    .expect("game_mode_overview::Component failed to output");
-            },
 
             #[template]
             #[name = "content"]
             NewGameMode {
-                #[template_child]
-                carousel {
-                    connect_page_changed[sender] => move |_, page| {
-                        sender.input(Input::PageChanged(page));
-                    }
-                },
-
                 #[template_child]
                 back_button {
                     connect_clicked => Input::GoBack,
@@ -85,25 +72,24 @@ impl relm4::Component for Component {
             Input::Done(settings) => {
                 println!("{:#?}", settings);
             }
-            // This is jank, change it
             Input::GoNext => {
                 widgets
                     .content
                     .carousel
                     .scroll_to(&widgets.content.settings, true);
             }
-            Input::GoBack => {
-                widgets
+            Input::GoBack => match widgets.content.carousel.position().round() as usize {
+                0 => sender
+                    .output(Output::Exit)
+                    .expect("Failed to output new_game_mode_page"),
+                1 => widgets
                     .content
                     .carousel
-                    .scroll_to(&widgets.content.types, true);
-            }
-            Input::PageChanged(page) => {
-                widgets.content.header_bar.set_show_back_button(page == 0);
-                widgets.content.back_button.set_visible(page == 1);
-            }
+                    .scroll_to(&widgets.content.types, true),
+                _ => (),
+            },
             Input::SelectTimeline => {
-                let page = timeline::Component::builder().launch(());
+                let page = timeline::Component::builder().launch(None);
                 widgets.content.settings.set_content(Some(page.widget()));
 
                 {
