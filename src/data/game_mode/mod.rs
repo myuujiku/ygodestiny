@@ -4,7 +4,7 @@ use std::time::SystemTime;
 use serde::{Deserialize, Serialize};
 
 use crate::data::files;
-use crate::userdata::RedbStorage;
+use crate::data::RedbStorage;
 
 #[derive(Serialize, Deserialize)]
 pub struct GameMode {
