@@ -51,16 +51,18 @@ impl WidgetTemplate for SplitView {
                 set_title: "Content",
 
                 #[name = "content_view"]
-                adw::ToolbarView {
-                    add_top_bar = &adw::HeaderBar {
-                        set_show_title: false,
-                    },
+                adw::Bin {
+                    adw::ToolbarView {
+                        add_top_bar = &adw::HeaderBar {
+                            set_show_title: false,
+                        },
 
-                    #[wrap(Some)]
-                    set_content = &adw::StatusPage {
-                        set_title: "Select a Game Mode",
-                        set_icon_name: Some(icon_name::NINTENDO_CONTROLLER),
-                    },
+                        #[wrap(Some)]
+                        set_content = &adw::StatusPage {
+                            set_title: "Select a Game Mode",
+                            set_icon_name: Some(icon_name::NINTENDO_CONTROLLER),
+                        },
+                    }
                 }
             },
         }
