@@ -1,4 +1,5 @@
 pub mod components;
+pub mod factories;
 pub mod templates;
 
 use adw::prelude::*;
