@@ -17,6 +17,7 @@ macro_rules! create_settings_component {
         use adw::prelude::*;
         use relm4::prelude::*;
 
+        use crate::gui::templates::Clamp;
         use crate::settings::game_mode::Settings;
 
         pub struct Component {
@@ -36,15 +37,18 @@ macro_rules! create_settings_component {
                     set_content = &adw::StatusPage {
                         set_title: "Game Mode settings",
 
+                        #[template]
                         #[wrap(Some)]
-                        set_child = &gtk::Box::new(gtk::Orientation::Vertical, 12) {
-                            $( adw::PreferencesGroup {
-                                set_title: $l,
+                        set_child = &Clamp {
+                            gtk::Box::new(gtk::Orientation::Vertical, 12) {
+                                $( adw::PreferencesGroup {
+                                    set_title: $l,
 
-                                $(
-                                    add = model.$i.get(),
-                                )*
-                            }, )*
+                                    $(
+                                        add = model.$i.get(),
+                                    )*
+                                }, )*
+                            },
                         },
                     },
 

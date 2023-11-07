@@ -17,47 +17,53 @@ impl WidgetTemplate for NewGameMode {
                 },
             },
 
-            #[template]
             #[wrap(Some)]
-            set_content = &Clamp {
-                #[name = "carousel"]
-                adw::Carousel {
-                    set_interactive: false,
+            #[name = "carousel"]
+            set_content = &adw::Carousel {
+                set_interactive: false,
 
-                    #[name = "types"]
-                    adw::StatusPage {
-                        set_hexpand: true,
-                        set_title: "Select a Game Mode type",
+                #[name = "types"]
+                adw::Bin {
+                    set_hexpand: true,
 
-                        #[wrap(Some)]
-                        set_child = &adw::PreferencesGroup {
-                            #[name = "type_timeline"]
-                            adw::ActionRow {
-                                set_title: "Timeline",
-                                set_subtitle: "Progress through sets in a fixed order",
-                                set_activatable: true,
-                                add_suffix: &gtk::Image::builder().icon_name("go-next").build(),
-                            },
+                    #[template]
+                    Clamp {
+                        adw::StatusPage {
+                            set_hexpand: true,
+                            set_title: "Select a Game Mode type",
 
-                            adw::ActionRow {
-                                set_title: "Paths (WIP)",
-                                set_subtitle: "Travel paths that lead to different sets",
-                            },
+                            #[wrap(Some)]
+                            set_child = &adw::PreferencesGroup {
+                                #[name = "type_timeline"]
+                                adw::ActionRow {
+                                    set_title: "Timeline",
+                                    set_subtitle: "Progress through sets in a fixed order",
+                                    set_activatable: true,
+                                    add_suffix: &gtk::Image::builder().icon_name("go-next").build(),
+                                },
 
-                            adw::ActionRow {
-                                set_title: "Chaos (WIP)",
-                                set_subtitle: "Try to make the best out of a pile of random packs",
-                            },
+                                adw::ActionRow {
+                                    set_title: "Paths (WIP)",
+                                    set_subtitle: "Travel paths that lead to different sets",
+                                },
 
-                            adw::ActionRow {
-                                set_title: "Shop (WIP)",
-                                set_subtitle: "Buy packs with Duel Credits",
+                                adw::ActionRow {
+                                    set_title: "Chaos (WIP)",
+                                    set_subtitle: "Try to make the best out of a pile of random packs",
+                                },
+
+                                adw::ActionRow {
+                                    set_title: "Shop (WIP)",
+                                    set_subtitle: "Buy packs with Duel Credits",
+                                },
                             },
                         },
                     },
+                },
 
-                    #[name = "settings"]
-                    adw::ToolbarView {},
+                #[name = "settings"]
+                adw::Bin {
+                    set_hexpand: true,
                 },
             },
         }

@@ -90,7 +90,7 @@ impl relm4::Component for Component {
             },
             Input::SelectTimeline => {
                 let page = timeline::Component::builder().launch(None);
-                widgets.content.settings.set_content(Some(page.widget()));
+                widgets.content.settings.set_child(Some(page.widget()));
 
                 {
                     let sender = sender.clone();
