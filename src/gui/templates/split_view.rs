@@ -33,9 +33,7 @@ impl WidgetTemplate for SplitView {
                         set_hscrollbar_policy: gtk::PolicyType::Never,
 
                         #[name = "content"]
-                        adw::Bin {
-                            add_css_class: "toolbar",
-                        },
+                        adw::Bin,
                     },
 
                     #[name = "top_search_entry"]

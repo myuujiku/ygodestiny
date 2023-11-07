@@ -1,29 +1,23 @@
-use std::time::SystemTime;
-
 use adw::prelude::*;
 use relm4::prelude::*;
-
-use crate::data::game_mode::GameModeMetadata;
 
 #[derive(Debug)]
 pub struct Component {
     uuid: u128,
-    name: String,
-    description: String,
-    last_played: SystemTime,
-    index: DynamicIndex,
 }
 
 #[derive(Debug)]
 pub struct Data {
     pub uuid: u128,
-    pub metadata: GameModeMetadata,
+    pub name: String,
+    pub description: String,
 }
 
 #[derive(Debug)]
 pub enum Input {
     Open,
     SetVisible(bool),
+    SetText(String, String),
 }
 
 #[derive(Debug)]
@@ -45,22 +39,16 @@ impl FactoryComponent for Component {
         #[root]
         #[name = "root"]
         adw::ActionRow {
-            set_selectable: false,
-            set_title: &self.name,
-            set_subtitle: &self.description,
+            set_selectable: true,
             set_activatable: true,
             connect_activated => Input::Open,
         },
     }
 
-    fn init_model(data: Data, index: &Self::Index, _sender: FactorySender<Self>) -> Self {
-        Self {
-            uuid: data.uuid,
-            name: data.metadata.name,
-            description: data.metadata.description,
-            last_played: data.metadata.last_played,
-            index: index.clone(),
-        }
+    fn init_model(data: Data, _: &Self::Index, sender: FactorySender<Self>) -> Self {
+        sender.input(Input::SetText(data.name, data.description));
+
+        Self { uuid: data.uuid }
     }
 
     fn update_with_view(&mut self, widgets: &mut Widgets, msg: Input, sender: FactorySender<Self>) {
@@ -69,6 +57,10 @@ impl FactoryComponent for Component {
                 .output(Output::Open(self.uuid))
                 .expect("Failed to output from game_mode_entry factory"),
             Input::SetVisible(value) => widgets.root.set_visible(value),
+            Input::SetText(name, description) => {
+                widgets.root.set_title(&name);
+                widgets.root.set_subtitle(&description);
+            }
         }
     }
 }

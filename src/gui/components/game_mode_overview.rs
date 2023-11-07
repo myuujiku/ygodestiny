@@ -53,7 +53,9 @@ impl relm4::Component for Component {
                         #[template_child]
                         content {
                             #[local_ref]
-                            game_mode_entry_box -> gtk::ListBox {}
+                            game_mode_entry_box -> gtk::ListBox {
+                                add_css_class: "navigation-sidebar",
+                            }
                         },
                     },
                 },
@@ -122,9 +124,13 @@ impl relm4::Component for Component {
             }
             Input::Open(uuid) => {
                 widgets.navigation_view.pop();
+                println!("{uuid}");
             }
             Input::Update => {
-                let all = GameMode::get_all_as::<Metadata<GameModeMetadata>>().unwrap();
+                let mut all = GameMode::get_all_as::<Metadata<GameModeMetadata>>().unwrap();
+                all.sort_unstable_by(|a, b| {
+                    b.1.metadata.last_played.cmp(&a.1.metadata.last_played)
+                });
 
                 let mut guard = self.game_mode_entries.guard();
                 guard.clear();
@@ -132,7 +138,8 @@ impl relm4::Component for Component {
                 for data in all {
                     guard.push_back(game_mode_entry::Data {
                         uuid: data.0,
-                        metadata: data.1.metadata,
+                        name: data.1.metadata.name,
+                        description: data.1.metadata.description,
                     });
                 }
             }
