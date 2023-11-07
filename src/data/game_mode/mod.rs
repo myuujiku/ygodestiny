@@ -23,6 +23,6 @@ impl RedbStorage for GameMode {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct GameModeMetadata {
     pub name: String,
-    pub description: String,
+    pub game_mode_type: String,
     pub last_played: SystemTime,
 }

@@ -142,7 +142,7 @@ impl relm4::Component for Component {
                     guard.push_back(game_mode_entry::Data {
                         uuid: data.0,
                         name: data.1.metadata.name,
-                        description: data.1.metadata.description,
+                        description: data.1.metadata.game_mode_type,
                     });
                 }
             }

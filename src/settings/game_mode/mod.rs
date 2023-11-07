@@ -15,7 +15,10 @@ macro_rules! create_settings {
 create_settings!(multi_choice, set_rotation);
 
 macro_rules! create_settings_component {
-    ( | $( $l:literal $( $i:ident ),* )|* ) => {
+    (
+        # $t:literal
+        | $( $l:literal $( $i:ident ),* )|*
+    ) => {
         use adw::prelude::*;
         use relm4::prelude::*;
 
@@ -49,11 +52,6 @@ macro_rules! create_settings_component {
                                     #[name = "__name_row"]
                                     adw::EntryRow {
                                         set_title: "Name",
-                                    },
-
-                                    #[name = "__description_row"]
-                                    adw::EntryRow {
-                                        set_title: "Description",
                                     },
                                 },
 
@@ -112,7 +110,7 @@ macro_rules! create_settings_component {
                         },
                         metadata: GameModeMetadata {
                             name: widgets.__name_row.text().to_string(),
-                            description: widgets.__description_row.text().to_string(),
+                            game_mode_type: $t.to_string(),
                             last_played: std::time::SystemTime::now(),
                         },
                         games: Vec::new(),
