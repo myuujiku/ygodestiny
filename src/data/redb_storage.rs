@@ -2,7 +2,7 @@ use std::any::type_name;
 use std::path::Path;
 
 use log::warn;
-use redb::{Database, DatabaseError, ReadableTable, TableDefinition};
+use redb::{Database, ReadableTable, TableDefinition};
 use serde::{de::DeserializeOwned, Serialize};
 use uuid::Uuid;
 
@@ -25,15 +25,6 @@ pub trait RedbStorage: Serialize + DeserializeOwned {
         } else {
             Ok(None)
         }
-    }
-
-    fn ensure_table() -> anyhow::Result<()> {
-        let db = Self::open_db()?;
-        let write_txn = db.begin_write()?;
-        write_txn.open_table(REDB_TABLE)?;
-        write_txn.commit()?;
-
-        Ok(())
     }
 
     fn save(&self, key: u128) -> anyhow::Result<()> {
@@ -93,7 +84,19 @@ pub trait RedbStorage: Serialize + DeserializeOwned {
         Ok(data)
     }
 
-    fn open_db() -> Result<Database, DatabaseError> {
-        Database::create(Self::db_path())
+    fn open_db() -> anyhow::Result<Database> {
+        let path = Self::db_path();
+        let exists = path.is_file();
+
+        let db = Database::create(path)?;
+
+        // Make sure that the default table exists
+        if !exists {
+            let write_txn = db.begin_write()?;
+            write_txn.open_table(REDB_TABLE)?;
+            write_txn.commit()?;
+        }
+
+        Ok(db)
     }
 }
