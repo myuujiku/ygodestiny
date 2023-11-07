@@ -126,12 +126,12 @@ impl relm4::Component for Component {
                 widgets.navigation_view.pop();
             }
             Input::Open(uuid) => {
-                widgets.navigation_view.pop();
                 println!("{uuid}");
 
                 let page = game_mode_page::Component::builder().launch(uuid);
                 widgets.split_view.content_view.set_content(Some(page.widget()));
                 widgets.split_view.set_show_content(true);
+                widgets.navigation_view.pop();
 
                 relm4::spawn_local(async move {
                     let output = page
