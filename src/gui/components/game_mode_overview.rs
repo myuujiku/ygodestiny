@@ -70,7 +70,7 @@ impl relm4::Component for Component {
         widgets: &mut Widgets,
         msg: Input,
         sender: ComponentSender<Self>,
-        root: &Self::Root,
+        _root: &Self::Root,
     ) {
         match msg {
             Input::New => {
