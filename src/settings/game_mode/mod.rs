@@ -1,3 +1,4 @@
+pub mod multi_choice;
 pub mod set_rotation;
 
 macro_rules! create_settings {
@@ -9,7 +10,7 @@ macro_rules! create_settings {
     }
 }
 
-create_settings!(set_rotation);
+create_settings!(multi_choice, set_rotation);
 
 macro_rules! create_settings_component {
     ( | $( $l:literal $( $i:ident ),* )|* ) => {
@@ -24,7 +25,7 @@ macro_rules! create_settings_component {
 
         #[relm4::component(pub)]
         impl SimpleComponent for Component {
-            type Init = ();
+            type Init = Option<Settings>;
             type Input = ();
             type Output = Settings;
             type Widgets = Widgets;
@@ -32,19 +33,24 @@ macro_rules! create_settings_component {
             view! {
                 adw::ToolbarView {
                     #[wrap(Some)]
-                    set_content = &adw::PreferencesGroup {
-                        $( adw::PreferencesGroup {
-                            set_title: $l,
+                    set_content = &adw::StatusPage {
+                        set_title: "Game Mode settings",
 
-                            $(
-                                //add: $i = &$i::Type,
-                                add = model.$i.get(),
-                            )*
-                        }, )*
+                        #[wrap(Some)]
+                        set_child = &gtk::Box::new(gtk::Orientation::Vertical, 12) {
+                            $( adw::PreferencesGroup {
+                                set_title: $l,
+
+                                $(
+                                    add = model.$i.get(),
+                                )*
+                            }, )*
+                        },
                     },
 
                     add_bottom_bar = &gtk::ActionBar {
                         pack_end = &gtk::Button {
+                            add_css_class: "suggested-action",
                             set_label: "Confirm",
                             connect_clicked => (),
                         },
@@ -53,13 +59,17 @@ macro_rules! create_settings_component {
             }
 
             fn init(
-                _: (),
+                settings: Self::Init,
                 _root: &Self::Root,
                 _sender: ComponentSender<Self>,
             ) -> ComponentParts<Self> {
                 let model = Self {
                     $( $( $i: $i::Widgets::build(), )* )*
                 };
+
+                if let Some(settings) = settings {
+                    $( $( model.$i.load(&settings.$i); )* )*
+                }
 
                 let widgets = view_output!();
 
