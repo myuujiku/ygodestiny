@@ -12,6 +12,7 @@ use crate::data::{
 use crate::gui::components::{game_mode_page, new_game_mode_page};
 use crate::gui::factories::game_mode_entry;
 use crate::gui::templates::{breakpoint, SplitView};
+use crate::settings::game_mode::components::timeline;
 
 pub struct Component {
     game_mode_entries: FactoryVecDeque<game_mode_entry::Component>,
@@ -183,7 +184,27 @@ impl relm4::Component for Component {
                     });
                 }
             }
-            Input::Edit(uuid) => {}
+            Input::Edit(uuid) => {
+                let content = timeline::Component::builder()
+                    .launch(Some(GameMode::get(uuid).unwrap().settings));
+                let page = adw::NavigationPage::builder()
+                    .child(content.widget())
+                    .title("Game Mode settings")
+                    .build();
+                widgets.navigation_view.push(&page);
+
+                {
+                    let sender = sender.clone();
+
+                    relm4::spawn_local(async move {
+                        let output = content
+                            .into_stream()
+                            .recv_one()
+                            .await
+                            .expect("Failed to recieve output from timeline");
+                    });
+                }
+            }
             Input::Delete(uuid) => {}
             Input::Copy(uuid) => {
                 let mut game_mode = GameMode::get(uuid).unwrap();
