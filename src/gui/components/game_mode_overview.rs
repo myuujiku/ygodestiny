@@ -1,3 +1,5 @@
+use std::time::SystemTime;
+
 use adw::prelude::*;
 use gtk::glib;
 use relm4::factory::FactoryVecDeque;
@@ -184,7 +186,8 @@ impl relm4::Component for Component {
             Input::Edit(uuid) => {}
             Input::Delete(uuid) => {}
             Input::Copy(uuid) => {
-                let game_mode = GameMode::get(uuid).unwrap();
+                let mut game_mode = GameMode::get(uuid).unwrap();
+                game_mode.metadata.last_played = SystemTime::now();
                 game_mode.save(GameMode::generate_uuid().unwrap().unwrap());
 
                 let index = widgets
