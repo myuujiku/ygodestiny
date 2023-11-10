@@ -25,29 +25,8 @@ mod kw {
 mod row;
 use row::Row;
 
-struct RowDef {
-    root: Ident,
-    name: Ident,
-    row: Row,
-}
-
-impl RowDef {}
-
-impl Parse for RowDef {
-    fn parse(input: ParseStream) -> Result<Self> {
-        Ok(Self {
-            root: {
-                input.parse::<Token![@]>()?;
-                input.parse::<Ident>()?
-            },
-            name: input.parse::<Ident>()?,
-            row: {
-                input.parse::<Token![:]>()?;
-                input.parse::<Row>()?
-            },
-        })
-    }
-}
+mod row_def;
+use row_def::RowDef;
 
 enum Val {
     Adjustment {
