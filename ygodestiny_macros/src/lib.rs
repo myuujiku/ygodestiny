@@ -34,59 +34,8 @@ use val::Val;
 mod val_def;
 use val_def::ValDef;
 
-enum CmdLink {
-    Adjustment {
-        linked: Ident,
-        origin: Ident,
-        modifier: Option<(BinOp, LitFloat)>,
-    },
-}
-
-impl Parse for CmdLink {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<kw::link>()?;
-        let lookahead = input.lookahead1();
-        if lookahead.peek(kw::adjustment) {
-            input.parse::<kw::adjustment>()?;
-            Ok(Self::Adjustment {
-                linked: input.parse::<Ident>()?,
-                origin: {
-                    input.parse::<kw::to>()?;
-                    input.parse::<Ident>()?
-                },
-                modifier: {
-                    match input.peek(Paren) {
-                        true => {
-                            let content;
-                            parenthesized!(content in input);
-                            content.parse::<kw::val>()?;
-                            Some((content.parse::<BinOp>()?, content.parse::<LitFloat>()?))
-                        }
-                        false => None,
-                    }
-                },
-            })
-        } else {
-            Err(lookahead.error())
-        }
-    }
-}
-
-enum Cmd {
-    Link(CmdLink),
-}
-
-impl Parse for Cmd {
-    fn parse(input: ParseStream) -> Result<Self> {
-        input.parse::<Token![#]>()?;
-        let lookahead = input.lookahead1();
-        if lookahead.peek(kw::link) {
-            Ok(Self::Link(input.parse::<CmdLink>()?))
-        } else {
-            Err(lookahead.error())
-        }
-    }
-}
+mod cmd;
+use cmd::Cmd;
 
 enum Statement {
     RowDef(RowDef),
