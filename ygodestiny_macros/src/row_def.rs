@@ -1,7 +1,7 @@
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{Ident, Token};
 
-use crate::row::Row;
+use crate::Row;
 
 pub struct RowDef {
     root: Ident,
