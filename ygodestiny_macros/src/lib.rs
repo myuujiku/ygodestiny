@@ -1,5 +1,6 @@
 use proc_macro::TokenStream;
-use quote::{quote, quote_spanned};
+use proc_macro2::{Span, TokenStream as TS2};
+use quote::{quote, quote_spanned, ToTokens, TokenStreamExt};
 use syn::parse::{Parse, ParseStream, Result};
 use syn::punctuated::Punctuated;
 use syn::spanned::Spanned;
@@ -21,6 +22,13 @@ mod kw {
     syn::custom_keyword!(val);
 }
 
+struct RowAttrs {
+    load_fn: Ident,
+    collect_fn: Ident,
+    convert_to: Option<Type>,
+    load_value: Option<TS2>,
+}
+
 enum Row {
     Expander {
         default: Option<LitBool>,
@@ -38,6 +46,86 @@ enum Row {
         title: LitStr,
         subtitle: Option<LitStr>,
     },
+}
+
+impl Row {
+    fn fill_tokens(&self, build_content: &mut TS2) -> RowAttrs {
+        match self {
+            Row::Expander {
+                default,
+                title,
+                subtitle,
+            } => {
+                build_content.extend(quote! {
+                    adw::ExpanderRow::builder()
+                        .show_enable_switch(true)
+                        .expanded(false)
+                        .title(#title)
+                });
+                if let Some(subtitle) = subtitle {
+                    build_content.extend(quote!(.subtitle(#subtitle)));
+                }
+                if let Some(default) = default {
+                    build_content.extend(quote!(.value(#default)));
+                }
+                build_content.extend(quote!(.build();));
+
+                RowAttrs {
+                    load_fn: Ident::new("set_enable_expansion", Span::call_site()),
+                    collect_fn: Ident::new("enables_expansion", Span::call_site()),
+                    convert_to: None,
+                    load_value: Some(quote!(true)),
+                }
+            }
+            Row::Spin {
+                convert_to,
+                adjustment,
+                title,
+                subtitle,
+            } => {
+                build_content.extend(quote! {
+                    adw::SpinRow::builder()
+                        .adjustment(&#adjustment)
+                        .title(#title)
+                });
+                if let Some(subtitle) = subtitle {
+                    build_content.extend(quote!(.subtitle(#subtitle)));
+                }
+                build_content.extend(quote!(.build();));
+
+                RowAttrs {
+                    load_fn: Ident::new("value", Span::call_site()),
+                    collect_fn: Ident::new("set_value", Span::call_site()),
+                    convert_to: convert_to.clone(),
+                    load_value: None,
+                }
+            }
+            Row::Switch {
+                default,
+                title,
+                subtitle,
+            } => {
+                build_content.extend(quote! {
+                    adw::SwitchRow::builder()
+                        .title(#title)
+                });
+                if let Some(subtitle) = subtitle {
+                    build_content.extend(quote!(.subtitle(#subtitle)));
+                }
+                if let Some(default) = default {
+                    build_content.extend(quote!(.value(#default)));
+                }
+                build_content.extend(quote!(.build();));
+
+                RowAttrs {
+                    load_fn: Ident::new("is_active", Span::call_site()),
+                    collect_fn: Ident::new("set_active", Span::call_site()),
+                    convert_to: None,
+                    load_value: None,
+                }
+            }
+        }
+    }
 }
 
 impl Parse for Row {
@@ -109,6 +197,10 @@ struct RowDef {
     root: Ident,
     name: Ident,
     row: Row,
+}
+
+impl RowDef {
+
 }
 
 impl Parse for RowDef {
@@ -318,66 +410,5 @@ impl Parse for Settings {
 
 #[proc_macro]
 pub fn settings(input: TokenStream) -> TokenStream {
-    let mut expanded = quote! {
-        use adw::prelude::*;
-        use serde::{Serialize, Deserialize};
-    };
-    let mut names = quote!();
-
-    for setting in parse_macro_input!(input as Settings).settings {
-        match setting.root {
-            Row::Expander {
-                default,
-                title,
-                subtitle,
-            } => {
-                quote! {};
-            }
-            Row::Spin {
-                convert_to,
-                adjustment,
-                title,
-                subtitle,
-            } => todo!(),
-            Row::Switch {
-                default,
-                title,
-                subtitle,
-            } => todo!(),
-        }
-
-        for stmt in setting.statements {
-            match stmt {
-                Statement::RowDef(def) => {}
-                Statement::ValDef(def) => todo!(),
-                Statement::Cmd(def) => todo!(),
-            }
-        }
-
-        let name = setting.name;
-
-        expanded = quote! {
-            #expanded
-            mod #name {
-                use serde::{Serialize, Deserialize};
-
-                #[derive(Debug, Serialize, Deserialize)]
-                pub struct Setting;
-            }
-        };
-
-        names = quote! {
-            #names
-            pub #name: Option<#name::Setting>,
-        };
-    }
-
-    expanded = quote! {
-        #expanded
-
-        #[derive(Debug, Default, Serialize, Deserialize)]
-        pub struct Settings { #names }
-    };
-
-    TokenStream::from(expanded)
+    TokenStream::new()
 }
