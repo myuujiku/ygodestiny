@@ -37,26 +37,8 @@ use val_def::ValDef;
 mod cmd;
 use cmd::Cmd;
 
-enum Statement {
-    RowDef(RowDef),
-    ValDef(ValDef),
-    Cmd(Cmd),
-}
-
-impl Parse for Statement {
-    fn parse(input: ParseStream) -> Result<Self> {
-        let lookahead = input.lookahead1();
-        if lookahead.peek(Token![@]) {
-            Ok(Self::RowDef(input.parse::<RowDef>()?))
-        } else if lookahead.peek(Ident) {
-            Ok(Self::ValDef(input.parse::<ValDef>()?))
-        } else if lookahead.peek(Token![#]) {
-            Ok(Self::Cmd(input.parse::<Cmd>()?))
-        } else {
-            Err(lookahead.error())
-        }
-    }
-}
+mod statement;
+use statement::Statement;
 
 struct Setting {
     name: Ident,
