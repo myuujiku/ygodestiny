@@ -4,6 +4,8 @@ use gtk::{gio, glib};
 use ygodestiny::data::dirs;
 use ygodestiny::gui;
 
+const APP_ID: &str = "xyz.ygodestiny.YGODestiny";
+
 fn main() -> anyhow::Result<glib::ExitCode> {
     env_logger::init();
     dirs::init()?;
