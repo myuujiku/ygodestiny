@@ -1,5 +1,3 @@
-use proc_macro::TokenStream;
-
 mod kw {
     syn::custom_keyword!(root);
     syn::custom_keyword!(expander);
@@ -12,26 +10,23 @@ mod kw {
     syn::custom_keyword!(val);
 }
 
-mod row;
-use row::Row;
-
-mod row_def;
-use row_def::RowDef;
-
-mod val;
-use val::Val;
-
-mod val_def;
-use val_def::ValDef;
-
 mod cmd;
-use cmd::Cmd;
-
-mod statement;
-use statement::Statement;
-
+mod row;
+mod row_def;
 mod settings;
+mod statement;
+mod val;
+mod val_def;
+
+use proc_macro::TokenStream;
+
+use cmd::Cmd;
+use row::Row;
+use row_def::RowDef;
 use settings::Settings;
+use statement::Statement;
+use val::Val;
+use val_def::ValDef;
 
 #[proc_macro]
 pub fn settings(input: TokenStream) -> TokenStream {
