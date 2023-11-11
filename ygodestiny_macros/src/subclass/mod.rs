@@ -6,7 +6,7 @@ mod state;
 use proc_macro2::Span;
 use quote::quote;
 use syn::parse::{Parse, ParseStream, Result};
-use syn::{parse_macro_input, Ident, LitStr};
+use syn::{parse_macro_input, Ident, LitStr, Token};
 
 use declaration::Declaration;
 use implementation::Implementation;
@@ -19,6 +19,7 @@ struct ObjectSubclass {
     declaration: Declaration,
     imports: Imports,
     state: Option<State>,
+    self_implementation: Option<Implementation>,
     implementations: Vec<Implementation>,
 }
 
@@ -34,6 +35,15 @@ impl Parse for ObjectSubclass {
             None
         };
 
+        let self_implementation = if input.peek(Token![impl]) && input.peek2(Token![Self]) {
+            Some(Implementation::parse_self(
+                input,
+                declaration.class_name.clone(),
+            )?)
+        } else {
+            None
+        };
+
         let mut implementations = vec![];
 
         while !input.is_empty() {
@@ -44,6 +54,7 @@ impl Parse for ObjectSubclass {
             declaration,
             imports,
             state,
+            self_implementation,
             implementations,
         })
     }
@@ -54,6 +65,7 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
         declaration,
         imports,
         state,
+        self_implementation,
         mut implementations,
     } = parse_macro_input!(input as ObjectSubclass);
 
@@ -105,6 +117,11 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
         }
 
         let mut tokens = proc_macro2::TokenStream::new();
+
+        if let Some(Implementation { target: _, content }) = self_implementation {
+            tokens.extend(quote!(impl #class_name { #content }))
+        }
+
         for (imp, content) in imps {
             tokens.extend(quote!(impl #imp for #class_name { #content }));
         }
