@@ -54,7 +54,7 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
         declaration,
         imports,
         state,
-        implementations,
+        mut implementations,
     } = parse_macro_input!(input as ObjectSubclass);
 
     let Declaration {
@@ -68,36 +68,45 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
         let mut imps = vec!["Object".to_string(), parent.object.to_string()];
         imps.extend(extensions.iter().map(|x| x.object.to_string()));
 
-        let mut errors: Option<TokenStream> = None;
-        for implementation in implementations {
-            if !imps.contains(&implementation.target.to_string()) {
-                let error = syn::Error::new(
-                    implementation.target.span(),
-                    format!("{} is not a member of {class_name}", implementation.target),
-                )
-                .to_compile_error()
-                .into();
-
-                if let Some(errors) = &mut errors {
-                    errors.extend(error);
-                } else {
-                    errors = Some(error);
-                }
-            }
-        }
-
-        if let Some(errors) = errors {
-            return errors;
-        }
-
-        let imps: Vec<Ident> = imps
+        let imps: Vec<(Ident, proc_macro2::TokenStream)> = imps
             .iter()
-            .map(|x| Ident::new(&format!("{x}Impl"), Span::call_site()))
+            .map(|a| {
+                (
+                    Ident::new(&format!("{a}Impl"), Span::call_site()),
+                    if let Some(i) = implementations
+                        .iter()
+                        .position(|b| &b.target.to_string() == a)
+                    {
+                        implementations.swap_remove(i).content
+                    } else {
+                        proc_macro2::TokenStream::new()
+                    },
+                )
+            })
             .collect();
 
+        if !implementations.is_empty() {
+            return implementations
+                .iter()
+                .fold(
+                    proc_macro2::TokenStream::new(),
+                    |mut r, x: &Implementation| {
+                        r.extend(
+                            syn::Error::new(
+                                x.target.span(),
+                                format!("{} is not a member of {class_name}", x.target),
+                            )
+                            .to_compile_error(),
+                        );
+                        r
+                    },
+                )
+                .into();
+        }
+
         let mut tokens = proc_macro2::TokenStream::new();
-        for imp in imps {
-            tokens.extend(quote!(impl #imp for #class_name {  }));
+        for (imp, content) in imps {
+            tokens.extend(quote!(impl #imp for #class_name { #content }));
         }
 
         tokens
@@ -126,6 +135,7 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
 
         quote! {
             mod imp {
+                use adw::prelude::*;
                 use adw::subclass::prelude::*;
                 use gtk::glib;
 
