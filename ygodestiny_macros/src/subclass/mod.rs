@@ -167,13 +167,13 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
         };
 
         quote! {
-            #imp
-
             gtk::glib::wrapper! {
                 pub struct #class_name(ObjectSubclass<imp::#class_name>)
                     @extends #parent #(, #extensions)*
                     #has_impl #(#implements),*;
             }
+
+            #imp
         }
     };
 
