@@ -1,4 +1,4 @@
-use proc_macro2::TokenStream;
+use proc_macro2::{Span, TokenStream};
 use quote::{quote, ToTokens};
 use syn::parse::{Parse, ParseStream, Result};
 use syn::{parenthesized, Ident, Token};
@@ -8,32 +8,28 @@ mod kw {
 }
 
 pub struct GtkIdent {
-    pub libadwaita: bool,
+    pub prefix: Ident,
     pub object: Ident,
 }
 
 impl Parse for GtkIdent {
     fn parse(input: ParseStream) -> Result<Self> {
-        let libadwaita = input.peek(kw::adw);
-
-        if libadwaita {
-            input.parse::<kw::adw>()?;
-        }
+        let prefix = if input.peek2(Ident) {
+            input.parse::<Ident>()?
+        } else {
+            Ident::new("gtk", Span::call_site())
+        };
 
         let object = input.parse::<Ident>()?;
 
-        Ok(Self { libadwaita, object })
+        Ok(Self { prefix, object })
     }
 }
 
 impl ToTokens for GtkIdent {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let Self { libadwaita, object } = self;
-        if *libadwaita {
-            tokens.extend(quote!(adw::#object))
-        } else {
-            tokens.extend(quote!(gtk::#object))
-        }
+        let Self { prefix, object } = self;
+        tokens.extend(quote!(#prefix::#object))
     }
 }
 
