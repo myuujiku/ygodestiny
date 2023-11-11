@@ -129,7 +129,10 @@ pub fn object_subclass(input: TokenStream) -> TokenStream {
         };
 
         let obj_id = LitStr::new(
-            &format!("__{}_{class_name}", std::env!("CARGO_PKG_NAME")),
+            &format!(
+                "__subclassed_{}{}_{class_name}",
+                parent.prefix, parent.object
+            ),
             Span::call_site(),
         );
 
