@@ -1,5 +1,9 @@
 use ygodestiny_macros::settings;
 
+use serde::{Deserialize, Serialize};
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Settings;
+
 settings! {
     set_rotation {
         #root: expander "Set rotation"
