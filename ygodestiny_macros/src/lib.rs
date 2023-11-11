@@ -15,6 +15,7 @@ mod row;
 mod row_def;
 mod settings;
 mod statement;
+mod subclass;
 mod val;
 mod val_def;
 
@@ -31,4 +32,9 @@ use val_def::ValDef;
 #[proc_macro]
 pub fn settings(input: TokenStream) -> TokenStream {
     TokenStream::new()
+}
+
+#[proc_macro]
+pub fn object_subclass(input: TokenStream) -> TokenStream {
+    subclass::object_subclass(input)
 }
