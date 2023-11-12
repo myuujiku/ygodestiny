@@ -1,4 +1,4 @@
-use gtk::Image;
+use relm4::gtk::Image;
 
 use super::dirs::IMAGES;
 

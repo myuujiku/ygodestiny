@@ -1,19 +1,19 @@
 use adw::prelude::*;
-use gtk::{gio, glib};
+use relm4::prelude::*;
 
 use ygodestiny::data::dirs;
 use ygodestiny::gui;
 
-const APP_ID: &str = "xyz.ygodestiny.YGODestiny";
-
-fn main() -> anyhow::Result<glib::ExitCode> {
+fn main() -> anyhow::Result<()> {
     env_logger::init();
     dirs::init()?;
 
-    let app = adw::Application::builder().application_id(APP_ID).build();
-    app.connect_activate(run_app);
+    let app = relm4::main_adw_application();
+    app.set_application_id(Some("xyz.ygodestiny.YGODestiny"));
+    app.set_resource_base_path(Some("/xyz/ygodestiny/YGODestiny/"));
 
-    Ok(app.run())
+    let app = RelmApp::from_app(app);
+    app.run::<gui::Main>(());
+
+    Ok(())
 }
-
-fn run_app(app: &adw::Application) {}
