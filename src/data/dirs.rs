@@ -5,17 +5,10 @@ use super::Lazy;
 use directories::ProjectDirs;
 
 lazy_path!(ROOT, {
-    let mut root = ProjectDirs::from("xyz", "ygodestiny", "YGODestiny")
+    ProjectDirs::from("xyz", "ygodestiny", "YGODestiny")
+        .expect("Failed to get project dirs")
         .data_dir()
-        .to_path_buf();
-
-    #[cfg(all(unix, not(target_os = "macos")))]
-    {
-        root.pop();
-        root.push("xyz.ygodestiny.YGODestiny");
-    }
-
-    root
+        .to_path_buf()
 });
 
 lazy_path!(USER, ROOT.join("user"));
