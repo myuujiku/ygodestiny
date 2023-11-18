@@ -15,7 +15,7 @@ features = ["gnome_45"]
 
 [dependencies]
 anyhow = "1.0"
-directories = "0.5"
+directories = { path = "directories-rs" }
 env_logger = { version = "0.10", features = ["color"] }
 log = "0.4"
 mlua = { version = "0.9", features = ["lua54", "macros", "vendored"] }
@@ -23,12 +23,12 @@ once_cell = "1.18"
 redb = "1.3"
 relm4 = { version = "0.7.0-beta.2", features = ["gnome_45", "libadwaita"] }
 relm4-icons = { version = "0.7.0-alpha.2", features = [
-  "plus-large",
-  "menu-large",
-  "nintendo-controller",
-  "settings",
-  "star-large",
-  "star-outline-rounded",
+    "plus-large",
+    "menu-large",
+    "nintendo-controller",
+    "settings",
+    "star-large",
+    "star-outline-rounded",
 ] }
 ron = "0.8"
 serde = { version = "1.0", features = ["derive"] }
